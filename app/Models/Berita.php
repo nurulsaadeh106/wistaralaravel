@@ -19,5 +19,6 @@ class Berita extends Model
         'tanggal',
         'sumber',
         'tautan_sumber',
+        'status',
     ];
 }

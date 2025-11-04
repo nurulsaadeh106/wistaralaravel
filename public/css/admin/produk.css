@@ -1,0 +1,149 @@
+h2 {
+    font-weight: 700;
+    color: #0b1841;
+}
+
+/* 🌈 Tabel produk */
+.table-container {
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-top: 25px;
+}
+
+.table thead.table-header th {
+    background-color: #081738;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    padding: 16px;
+    text-align: center;
+}
+
+.produk-row {
+    border-bottom: 1px solid #e5e7eb;
+    transition: 0.25s ease;
+}
+.produk-row:hover {
+    background-color: #f9fafb;
+    transform: scale(1.001);
+}
+
+.produk-cell {
+    padding: 20px 16px;
+    vertical-align: middle;
+}
+
+.produk-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+.produk-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #0b1841;
+}
+.produk-desc {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 3px;
+}
+
+/* 🎨 Tombol Aksi */
+.btn-action {
+    border: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: white;
+    transition: 0.3s ease;
+}
+.btn-edit {
+    background-color: #fbbf24;
+}
+.btn-edit:hover {
+    background-color: #d1a106;
+}
+.btn-delete {
+    background-color: #dc2626;
+}
+.btn-delete:hover {
+    background-color: #b91c1c;
+}
+.btn-arsip {
+    background-color: #4b5563;
+}
+.btn-arsip:hover {
+    background-color: #374151;
+}
+.btn-restore {
+    background-color: #2563eb;
+}
+.btn-restore:hover {
+    background-color: #1e40af;
+}
+
+.btn-shop,
+.btn-tiktok {
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-shop {
+    background-color: #f59e0b;
+    color: #fff;
+}
+.btn-shop:hover {
+    background-color: #d97706;
+}
+.btn-tiktok {
+    background-color: #000;
+    color: #fff;
+}
+.btn-tiktok:hover {
+    background-color: #1c1c1c;
+}
+
+.pagination {
+    justify-content: center;
+}
+.pagination .page-link {
+    color: #0b1841;
+    border-radius: 6px;
+}
+.pagination .page-item.active .page-link {
+    background-color: #0b1841;
+    border-color: #0b1841;
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #081738;
+    box-shadow: 0 0 0 0.15rem rgba(8, 23, 56, 0.25);
+}
+
+.btn-dark {
+    background-color: #081738;
+    border: none;
+    font-weight: 500;
+    border-radius: 12px;
+    padding: 10px 18px;
+}
+.btn-dark:hover {
+    background-color: #001b66;
+}
