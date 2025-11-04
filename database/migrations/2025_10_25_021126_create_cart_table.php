@@ -20,7 +20,7 @@ return new class extends Migration
 
             // Foreign key (jika relasi sudah ada)
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('id_produk')->references('id')->on('produk')->onDelete('cascade');
+            $table->foreign('id_produk')->references('id_produk')->on('produk')->onDelete('cascade');
         });
     }
 
