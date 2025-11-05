@@ -11,13 +11,16 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('id_produk');
-            $table->tinyInteger('rating')->unsigned();
-            $table->text('comment')->nullable();
-            $table->json('photos')->nullable();
+            $table->integer('rating');
+            $table->text('komentar');
+            $table->json('foto')->nullable();
             $table->string('video')->nullable();
             $table->timestamps();
 
-            $table->foreign('id_produk')->references('id_produk')->on('produk')->onDelete('cascade');
+            $table->foreign('id_produk')
+                  ->references('id_produk')
+                  ->on('produk')
+                  ->onDelete('cascade');
         });
     }
 

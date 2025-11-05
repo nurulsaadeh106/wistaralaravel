@@ -30,9 +30,9 @@ class ReviewSeeder extends Seeder
                 Review::create([
                     'user_id' => $user->id,
                     'id_produk' => $product->id_produk,
-                    'rating' => rand(4, 5), // Mayoritas review positif
-                    'comment' => $this->getRandomComment(),
-                    'photos' => json_encode(null),
+                    'rating' => rand(4, 5),
+                    'komentar' => $this->getRandomComment(),
+                    'foto' => null,
                     'video' => null
                 ]);
             }

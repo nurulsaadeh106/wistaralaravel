@@ -75,8 +75,42 @@
                 <!-- Navigation Links -->
                 <div class="nav-links">
                     @auth
+                        <!-- User Menu -->
+                        <div class="relative group">
+                            <button class="flex items-center space-x-1 text-gray-700 hover:text-gray-900">
+                                <span>{{ Auth::user()->name }}</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden group-hover:block">
+                                <a href="{{ route('dashboard.reviews') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Review Saya</a>
+                                <a href="{{ route('user.orders') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Pesanan Saya</a>
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+
                         <!-- Notification Component -->
                         @include('components.notification')
+
+                        @push('scripts')
+                        <script>
+                            // Cek notifikasi setiap 30 detik
+                            setInterval(function() {
+                                fetch('/notifications/check')
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.count > 0) {
+                                            document.getElementById('notification-badge').textContent = data.count;
+                                            document.getElementById('notification-badge').style.display = 'block';
+                                        }
+                                    });
+                            }, 30000);
+                        </script>
+                        @endpush
 
                         <!-- User Dropdown -->
                         <div class="relative">

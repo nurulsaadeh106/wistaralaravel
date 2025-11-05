@@ -46,7 +46,7 @@ class CartController extends Controller
 
         // Cek apakah sudah ada produk ini di keranjang
         $existing = Cart::where('user_id', Auth::id())
-            ->where('id_produk', $produkId)
+            ->where('produk_id', $produkId)
             ->first();
 
         if ($existing) {
@@ -65,7 +65,7 @@ class CartController extends Controller
             // Tambah item baru
             Cart::create([
                 'user_id' => Auth::id(),
-                'id_produk' => $produkId,
+                'produk_id' => $produkId,
                 'qty' => $qty,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -99,7 +99,7 @@ class CartController extends Controller
             ->firstOrFail();
 
         $qty = max((int) $request->input('qty', 1), 1);
-        $produk = Produk::find($cartItem->id_produk);
+        $produk = Produk::find($cartItem->produk_id);
 
         if ($qty > $produk->stok) {
             return back()->with('error', 'Jumlah melebihi stok produk.');
