@@ -21,8 +21,8 @@ return new class extends Migration
             $table->decimal('total', 15, 2); // total harga (maksimal 999 triliun)
             $table->enum('status', ['pending', 'proses', 'selesai', 'batal'])->default('pending'); // status order
             $table->enum('tipe_order', ['ambil', 'kirim']); // tipe pengambilan
-            $table->string('metode_pembayaran')->after('tipe_order');
-            $table->date('tanggal_ambil')->nullable()->after('metode_pembayaran');
+            $table->string('metode_pembayaran');
+            $table->date('tanggal_ambil')->nullable();
             $table->datetime('ambil')->nullable(); // waktu ambil
             $table->datetime('kirim')->nullable(); // waktu kirim
             $table->timestamps(); // created_at & updated_at

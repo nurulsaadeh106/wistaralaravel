@@ -1,282 +1,125 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\BeritaController;
-use App\Http\Controllers\UserAuthController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\UserOrderController;
-use App\Http\Controllers\Admin\ProdukAdminController;
-use App\Http\Controllers\Admin\BeritaAdminController;
-use App\Http\Controllers\Admin\KategoriAdminController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use App\Http\Controllers\Admin\AdminOrderController;
+namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\Cart;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Admin;
+use App\Notifications\OrderStatusNotification;
+use App\Http\Controllers\Controller;
 
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
+class CheckoutController extends Controller
+{
+    public function index()
+    {
+        $cartItems = Cart::where('user_id', Auth::id())
+            ->with('produk')
+            ->get();
 
-/*
-|--------------------------------------------------------------------------
-| Route Halaman Utama & Static Page
-|--------------------------------------------------------------------------
-*/
-// HOME
-Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::view('/tentang', 'tentang')->name('tentang');
-Route::view('/kontak', 'kontak')->name('kontak');
+        if ($cartItems->isEmpty()) {
+            return redirect()->route('katalog')
+                ->with('error', 'Keranjang belanja Anda kosong.');
+        }
 
-/*
-|--------------------------------------------------------------------------
-| Route Berita
-|--------------------------------------------------------------------------
-*/
+        $total = $cartItems->sum(function($item) {
+            return $item->qty * $item->produk->harga;
+        });
 
-Route::get('/berita', [BeritaController::class, 'index'])->name('berita');
-Route::get('/berita/{slug}', [BeritaController::class, 'show'])->name('berita.detail');
-
-/*
-|--------------------------------------------------------------------------
-| Route Produk / Katalog
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/katalog', [ProdukController::class, 'index'])->name('katalog');
-Route::get('/katalog', [ProdukController::class, 'index'])->name('katalog');
-/*
-|--------------------------------------------------------------------------
-| Route Keranjang
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware('auth')->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add/{produkId}', [CartController::class, 'add'])->name('cart.add');
-    Route::put('/cart/update/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Route Checkout
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth')->group(function () {
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Route Order Customer
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware('auth')->group(function () {
-    Route::get('/user/orders/{id}', [UserOrderController::class, 'show'])->name('user.order.show');
-    Route::post('/user/orders/{id}/upload-bukti', [UserOrderController::class, 'uploadBukti'])->name('user.order.uploadBukti');
-    Route::post('/user/orders/{id}/cancel', [UserOrderController::class, 'cancel'])->name('user.order.cancel');
-});
-
-Route::post('/checkout/{id}/upload-bukti', [UserOrderController::class, 'uploadBukti'])
-    ->name('checkout.uploadBukti');
-
-// 🔸 Halaman transfer bank (setelah order dibuat)
-Route::get('/checkout/bank-transfer/{id}', function($id) {
-    $order = \App\Models\Order::findOrFail($id);
-    return view('checkout.bank-transfer', compact('order'));
-})->name('checkout.bank');
-
-// 🔸 Halaman QRIS (sementara placeholder)
-Route::get('/checkout/qris/{id}', function($id) {
-    $order = \App\Models\Order::findOrFail($id);
-    return view('checkout.qris', compact('order'));
-})->name('checkout.qris');
-
-/*
-|--------------------------------------------------------------------------
-| Route Login & Auth User
-|--------------------------------------------------------------------------
-*/
-
-// 👤 Login User
-Route::get('/login', [UserAuthController::class, 'showUserLogin'])->name('login');
-Route::post('/login', [\App\Http\Controllers\UserAuthController::class, 'userLogin'])->name('user.login.post');
-
-// 👤 Logout User
-Route::get('/logout-user', [UserAuthController::class, 'userLogout'])->name('user.logout');
-Route::get('/register', [UserAuthController::class, 'showRegister'])->name('user.register');
-Route::post('/register', [UserAuthController::class, 'register'])->name('user.register.post');
-
-// 👤 edit User
-Route::middleware('auth')->group(function () {
-    Route::put('/user/update-profile', [\App\Http\Controllers\UserAuthController::class, 'updateProfile'])
-        ->name('user.update.profile');
-});
-
-// 🛡️ Dashboard User (middleware proteksi)
-Route::middleware('auth', 'verified')->group(function () {
-    Route::get('/user/dashboard', function () {
-        return view('user.dashboard');
-    });
-});
-
-// Halaman verifikasi email
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
-
-// Proses klik link verifikasi
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect('/login');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-// Kirim ulang email verifikasi
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('message', 'Link verifikasi telah dikirim ulang!');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// ✨ Reset Password
-Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-
-Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
-
-/*
-|--------------------------------------------------------------------------
-| Route Login & Auth Admin
-|--------------------------------------------------------------------------
-*/
-Route::get('/admin/login', [AuthController::class, 'showAdminLogin'])->name('admin.login');
-Route::post('/admin/login', [AuthController::class, 'adminLogin'])->name('admin.login.post');
-Route::get('/admin/logout', [AuthController::class, 'adminLogout'])->name('admin.logout');
-
-/*
-|--------------------------------------------------------------------------
-| Dashboard Admin
-|--------------------------------------------------------------------------
-*/
-Route::get('/admin/dashboard', function () {
-    if (!session()->has('admin_logged_in')) {
-        return redirect()->route('admin.login')->with('error', 'Silakan login terlebih dahulu.');
+        return view('checkout.index', compact('cartItems', 'total'));
     }
-    return view('admin.dashboard');
-})->name('admin.dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| Produk Admin
-|--------------------------------------------------------------------------
-*/
-Route::get('/admin/produk', function (Request $request) {
-    if (!session()->has('admin_logged_in')) {
-        return redirect()->route('admin.login')->with('error', 'Silakan login terlebih dahulu.');
+    public function process(Request $request)
+    {
+        $validated = $request->validate([
+            'tipe_order' => 'required|in:ambil,kirim',
+            'metode_pembayaran' => 'required|in:bank_transfer,qris,cod',
+            'nama' => 'required|string|max:100',
+            'telepon' => 'required|string|max:20',
+            'alamat' => 'required_if:tipe_order,kirim|string|nullable',
+            'catatan' => 'nullable|string',
+            'tanggal_ambil' => 'required|date|after:yesterday',
+        ]);
+
+        if ($validated['tipe_order'] === 'kirim') {
+            return back()->with('error', 'Fitur pengiriman sedang dalam pengembangan 🚚✨');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Ambil data keranjang
+            $cartItems = Cart::where('user_id', Auth::id())
+                ->with('produk')
+                ->get();
+
+            if ($cartItems->isEmpty()) {
+                DB::rollback();
+                return redirect()->route('katalog')
+                    ->with('error', 'Keranjang belanja Anda kosong.');
+            }
+
+            // Hitung total
+            $total = $cartItems->sum(function($item) {
+                return $item->qty * $item->produk->harga;
+            });
+
+            // Buat order baru
+            $order = Order::create([
+                'user_id' => Auth::id(),
+                'total' => $total,
+                'status' => 'pending',
+                'tipe_order' => $validated['tipe_order'],
+                'metode_pembayaran' => $validated['metode_pembayaran'],
+                'nama' => $validated['nama'],
+                'telepon' => $validated['telepon'],
+                'alamat' => $validated['alamat'],
+                'catatan' => $validated['catatan'],
+                'tanggal_ambil' => $validated['tanggal_ambil'],
+            ]);
+
+            // Pindahkan item dari cart ke order items
+            foreach ($cartItems as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'produk_id' => $item->produk_id,
+                    'qty' => $item->qty,
+                    'harga' => $item->produk->harga,
+                    'subtotal' => $item->qty * $item->produk->harga
+                ]);
+            }
+
+            // Kosongkan cart
+            Cart::where('user_id', Auth::id())->delete();
+
+            // Kirim notifikasi ke admin
+            $admin = Admin::first();
+            if ($admin) {
+                $messageText = "Ada pesanan baru yang perlu diproses!";
+                $admin->notify(new OrderStatusNotification($order, $messageText));
+            }
+
+            DB::commit();
+
+            // Redirect sesuai metode pembayaran
+            switch ($validated['metode_pembayaran']) {
+                case 'bank_transfer':
+                    return redirect()->route('checkout.bank-transfer', $order->id)
+                        ->with('success', 'Pesanan berhasil dibuat!');
+                case 'qris':
+                    return redirect()->route('checkout.qris', $order->id)
+                        ->with('success', 'Pesanan berhasil dibuat!');
+                default:
+                    return redirect()->route('user.orders')
+                        ->with('success', 'Pesanan berhasil dibuat!');
+            }
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
-    return app(\App\Http\Controllers\Admin\ProdukAdminController::class)->index($request);
-})->name('admin.produk.index');
-
-Route::get('/admin/produk/create', function () {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukAdminController::class)->create();
-})->name('admin.produk.create');
-
-Route::post('/admin/produk', function () {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukAdminController::class)->store(request());
-})->name('admin.produk.store');
-
-Route::get('/admin/produk/{id}/edit', function ($id) {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukAdminController::class)->edit($id);
-})->name('admin.produk.edit');
-
-Route::put('/admin/produk/{id}', function ($id) {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukAdminController::class)->update(request(), $id);
-})->name('admin.produk.update');
-
-Route::delete('/admin/produk/{id}', function ($id) {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukAdminController::class)->destroy($id);
-})->name('admin.produk.delete');
-
-Route::patch('/admin/produk/{id}/nonaktif', function ($id) {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukController::class)->nonaktif($id);
-})->name('admin.produk.nonaktif');
-
-Route::patch('/admin/produk/{id}/aktifkan', function ($id) {
-    if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-    return app(ProdukController::class)->aktifkan($id);
-})->name('admin.produk.aktifkan');
-
-/*
-|--------------------------------------------------------------------------
-| Kategori Admin
-|--------------------------------------------------------------------------
-*/
-Route::prefix('admin')->group(function () {
-
-    // Index kategori dengan proteksi login
-    Route::get('/kategori', function () {
-        if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-        return app(\App\Http\Controllers\Admin\KategoriAdminController::class)->index();
-    })->name('admin.kategori.index');
-
-    // Resource route kategori
-    Route::resource('kategori', \App\Http\Controllers\Admin\KategoriAdminController::class)
-        ->except(['index'])
-        ->names([
-            'create' => 'admin.kategori.create',
-            'store' => 'admin.kategori.store',
-            'show' => 'admin.kategori.show',
-            'edit' => 'admin.kategori.edit',
-            'update' => 'admin.kategori.update',
-            'destroy' => 'admin.kategori.delete',
-        ]);
-});
-
-/*
-|--------------------------------------------------------------------------
-| Pesanan Admin
-|--------------------------------------------------------------------------
-*/
-Route::get('/admin/pesanan', [AdminOrderController::class, 'index'])
-    ->name('admin.orders.index');
-Route::get('/admin/pesanan/{id}', [AdminOrderController::class, 'show'])
-    ->name('admin.orders.show');
-Route::patch('/admin/pesanan/{id}/update-payment', [AdminOrderController::class, 'updatePayment'])
-    ->name('admin.orders.updatePayment');
-Route::patch('/admin/pesanan/{id}/update-status', [AdminOrderController::class, 'updateStatus'])
-    ->name('admin.orders.updateStatus');
-
-/*
-|--------------------------------------------------------------------------
-| Berita Admin
-|--------------------------------------------------------------------------
-*/
-Route::prefix('admin')->group(function () {
-
-    Route::get('/berita', function () {
-        if (!session()->has('admin_logged_in')) return redirect()->route('admin.login');
-        return app(\App\Http\Controllers\Admin\BeritaAdminController::class)->index();
-    })->name('admin.berita.index');
-
-    Route::resource('berita', \App\Http\Controllers\Admin\BeritaAdminController::class)
-        ->except(['index'])
-        ->names([
-            'create' => 'admin.berita.create',
-            'store' => 'admin.berita.store',
-            'show' => 'admin.berita.show',
-            'edit' => 'admin.berita.edit',
-            'update' => 'admin.berita.update',
-            'destroy' => 'admin.berita.delete',
-        ]);
-});
+}

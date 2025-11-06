@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->index(); // email pengguna
-            $table->string('token'); // token reset password
-            $table->timestamp('created_at')->nullable(); // waktu token dibuat
+        Schema::table('produk', function (Blueprint $table) {
+            //
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('password_reset_tokens');
+        Schema::table('produk', function (Blueprint $table) {
+            //
+        });
     }
 };

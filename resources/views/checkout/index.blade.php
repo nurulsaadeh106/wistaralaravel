@@ -24,17 +24,60 @@
             <label for="nama" class="form-label fw-semibold">Nama Lengkap</label>
             <input type="text" name="nama" id="nama"
                    value="{{ auth()->user()->name }}"
-                   class="form-control rounded-pill" required readonly>
+                   class="form-control rounded-pill" required>
           </div>
           <div class="col-md-6">
             <label for="telepon" class="form-label fw-semibold">Nomor Telepon</label>
             <input type="text" name="telepon" id="telepon"
                    value="{{ auth()->user()->phone ?? '' }}"
                    class="form-control rounded-pill"
-                   required {{ auth()->user()->phone ? 'readonly' : '' }}>
+                   required>
+          </div>
+          <div class="col-md-12">
+            <label for="tipe_order" class="form-label fw-semibold">Tipe Pengambilan</label>
+            <select name="tipe_order" id="tipe_order" class="form-select rounded-pill" required>
+                <option value="">Pilih tipe pengambilan</option>
+                <option value="ambil">Ambil di Toko</option>
+                <option value="kirim">Kirim ke Alamat</option>
+            </select>
+          </div>
+          <div class="col-md-12" id="alamatField" style="display:none;">
+            <label for="alamat" class="form-label fw-semibold">Alamat Pengiriman</label>
+            <textarea name="alamat" id="alamat" class="form-control rounded" rows="3"></textarea>
+          </div>
+          <div class="col-md-6">
+            <label for="tanggal_ambil" class="form-label fw-semibold">Tanggal Pengambilan</label>
+            <input type="date" name="tanggal_ambil" id="tanggal_ambil"
+                   class="form-control rounded-pill" required>
+          </div>
+          <div class="col-md-6">
+            <label for="metode_pembayaran" class="form-label fw-semibold">Metode Pembayaran</label>
+            <select name="metode_pembayaran" id="metode_pembayaran" class="form-select rounded-pill" required>
+                <option value="">Pilih metode pembayaran</option>
+                <option value="bank_transfer">Transfer Bank</option>
+                <option value="qris">QRIS</option>
+                <option value="cod">Cash on Delivery</option>
+            </select>
+          </div>
+          <div class="col-md-12">
+            <label for="catatan" class="form-label fw-semibold">Catatan (Opsional)</label>
+            <textarea name="catatan" id="catatan" class="form-control rounded" rows="3"></textarea>
           </div>
         </div>
       </div>
+
+      <script>
+        document.getElementById('tipe_order').addEventListener('change', function() {
+            const alamatField = document.getElementById('alamatField');
+            if (this.value === 'kirim') {
+                alamatField.style.display = 'block';
+                document.getElementById('alamat').required = true;
+            } else {
+                alamatField.style.display = 'none';
+                document.getElementById('alamat').required = false;
+            }
+        });
+      </script>
 
       <!-- 🛍️ Barang yang Dipesan -->
       <div class="mb-4 pb-3 border-bottom">
@@ -58,8 +101,8 @@
                 <tr class="border-bottom">
                   <td>
                     <div class="d-flex align-items-center gap-3">
-                      <img src="{{ asset($item->produk->gambar) }}" 
-                           alt="{{ $item->produk->nama_produk }}" 
+                      <img src="{{ asset($item->produk->gambar) }}"
+                           alt="{{ $item->produk->nama_produk }}"
                            class="rounded shadow-sm border"
                            style="width: 60px; height: 60px; object-fit: cover;">
                       <div>
@@ -159,7 +202,7 @@
           </label>
           <div class="mt-2 ms-4 d-none" id="qrisInfo">
             <div class="p-3 bg-light rounded-3 border text-center">
-              <img src="{{ asset('img/qris.png') }}" alt="QRIS Batik Wistara" 
+              <img src="{{ asset('img/qris.png') }}" alt="QRIS Batik Wistara"
                   style="max-width: 200px; border-radius: 10px;">
               <p class="mt-2 mb-0"><small>Scan QRIS di atas untuk pembayaran</small></p>
             </div>
