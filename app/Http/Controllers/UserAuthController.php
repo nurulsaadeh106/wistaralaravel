@@ -45,22 +45,29 @@ class UserAuthController extends Controller
 
     public function register(Request $request)
     {
+        // Validasi input termasuk cek duplikat email & phone
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'phone' => 'required|string|max:20',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
             'password' => [
                 'required',
                 'string',
                 'min:8',
-                'regex:/[a-z]/',
-                'regex:/[A-Z]/',
-                'regex:/[0-9]/',
-                'regex:/[\W_]/',
+                'regex:/[a-z]/',     // huruf kecil
+                'regex:/[A-Z]/',     // huruf besar
+                'regex:/[0-9]/',     // angka
+                'regex:/[\W_]/',     // simbol
                 'confirmed',
             ],
+        ], [
+            // Pesan error custom
+            'email.unique' => 'Email sudah digunakan, silakan gunakan email lain.',
+            'phone.unique' => 'Nomor telepon sudah digunakan, silakan gunakan nomor lain.',
+            'password.regex' => 'Password harus mengandung huruf besar, kecil, angka, dan simbol.',
         ]);
 
+        // Simpan user baru
         $user = \App\Models\User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -68,15 +75,16 @@ class UserAuthController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        // ✅ Login langsung setelah register
+        // Login langsung
         Auth::login($user);
 
-        // 📩 Kirim email verifikasi
-        $user->sendEmailVerificationNotification();
+        // Kirim email verifikasi
+        if (method_exists($user, 'sendEmailVerificationNotification')) {
+            $user->sendEmailVerificationNotification();
+        }
 
-        // 🚀 Arahkan ke halaman verifikasi email
         return redirect()->route('verification.notice')
-                        ->with('message', 'Akun berhasil dibuat! Silakan cek email Anda untuk verifikasi.');
+            ->with('success', 'Akun berhasil dibuat! Silakan cek email Anda untuk verifikasi.');
     }
 
     public function updateProfile(Request $request)

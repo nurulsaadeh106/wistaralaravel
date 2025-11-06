@@ -101,7 +101,7 @@
 
                                                     <!-- Badge kategori -->
                                                     <span
-                                                        class="kategori-badge badge bg-dark position-absolute top-0 start-0 m-2">
+                                                        class="kategori-badge badge bg-light text-gold position-absolute top-0 start-0 m-2">
                                                         {{ $p->nama_kategori }}
                                                     </span>
                                                 </div>
@@ -202,9 +202,9 @@
                                 <!-- Tombol Aksi -->
                                 <div class="d-flex flex-column flex-md-row gap-2 mb-3">
                                     <!-- Beli Sekarang -->
-                                    <a href="{{ url('checkout/' . $p->id_produk) }}"
-                                        class="btn btn-dark flex-fill fw-semibold py-2">
-                                        🛍️ Beli Sekarang
+                                    <a href="{{ route('checkout', $p->id_produk) }}"
+                                    class="btn btn-dark flex-fill fw-semibold py-2">
+                                    🛍️ Beli Sekarang
                                     </a>
 
                                     @auth

@@ -42,22 +42,35 @@
         @endphp
 
         <div class="col-12 col-sm-6 col-lg-4">
-          <div class="produk-card position-relative overflow-hidden rounded-4 shadow-sm h-100">
-            <div class="produk-img-wrapper">
-              <img src="{{ $gambarUrl }}" alt="{{ $p->nama_produk }}" class="produk-img">
-              <span class="badge kategori-badge">{{ $p->nama_kategori }}</span>
+          <div class="produk-card border-0 rounded-4 shadow-sm h-100 d-flex flex-column overflow-hidden bg-white">
+            
+            <!-- Gambar Produk -->
+            <div class="position-relative" style="height: 240px;">
+              <img src="{{ $gambarUrl }}" 
+                  alt="{{ $p->nama_produk }}" 
+                  class="w-100 h-100 object-fit-cover rounded-top-4">
+              <span class="badge bg-light text-gold position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill">
+                {{ $p->nama_kategori }}
+              </span>
             </div>
-            <div class="produk-body p-3 bg-white">
+
+            <!-- Body Produk -->
+            <div class="p-3 d-flex flex-column flex-grow-1">
               <h5 class="fw-bold mb-1 text-dark text-truncate">{{ $p->nama_produk }}</h5>
-              <p class="harga text-gold fw-bold mb-2">
+              <p class="text-gold fw-bold mb-2">
                 Rp {{ number_format($p->harga, 0, ',', '.') }}
               </p>
-              <p class="text-muted small mb-3">{{ Str::limit($p->deskripsi, 70) }}</p>
-              <button type="button" class="btn kategori-pill w-100 rounded-pill fw-semibold"
-                      data-bs-toggle="modal" data-bs-target="#produkModal{{ $p->id_produk }}">
-                Detail Produk
+              <p class="text-muted small flex-grow-1 mb-3">
+                {{ Str::limit($p->deskripsi, 70) }}
+              </p>
+              <button type="button" 
+                      class="btn btn-gold w-100 rounded-pill fw-semibold mt-auto"
+                      data-bs-toggle="modal" 
+                      data-bs-target="#produkModal{{ $p->id_produk }}">
+                <i class="bi bi-eye me-1"></i> Detail Produk
               </button>
             </div>
+
           </div>
         </div>
       @endforeach
@@ -107,7 +120,8 @@
               <!-- Tombol Aksi -->
               <div class="d-flex flex-column flex-md-row gap-2 mb-3">
                 <!-- Beli Sekarang -->
-                <a href="{{ url('checkout/'.$p->id_produk) }}" class="btn btn-dark flex-fill fw-semibold py-2">
+                <a href="{{ route('checkout', $p->id_produk) }}"
+                  class="btn btn-dark flex-fill fw-semibold py-2">
                   🛍️ Beli Sekarang
                 </a>
 

@@ -5,8 +5,14 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use App\Http\Controllers\API\ReviewController;
-use App\Http\Controllers\ChatbotController; // <-- tambahkan ini sekalian
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\ChatbotApiController;
+
+// 🔹 Chatbot endpoint
+Route::post('/chatbot', [ChatbotApiController::class, 'reply']);
+Route::get('/chatbot', function () {
+    return response()->json(['message' => 'Chatbot API aktif ✅']);
+});
 
 // 🔹 Login endpoint
 Route::post('/login', function (Request $request) {
@@ -36,5 +42,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('reviews', ReviewController::class);
 });
 
-// 🔹 Chatbot endpoint
-Route::post('/chatbot', [ChatbotController::class, 'handle']);

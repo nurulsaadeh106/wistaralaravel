@@ -659,6 +659,17 @@ h5 {
     height: 100%;
 }
 
+.btn-gold {
+    display: inline-block;
+    background-color: #cda349;
+    color: #ffffff;
+    padding: 12px 32px;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
 /* ================= KATEGORI PILL ================= */
 .kategori-pill {
     border-radius: 50px;
@@ -671,6 +682,22 @@ h5 {
     background-color: #cda349;
     color: #fff;
     border-color: #cda349;
+}
+.object-fit-cover {
+  object-fit: cover;
+}
+
+.produk-card {
+  transition: all 0.25s ease-in-out;
+}
+
+.produk-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+.text-gold {
+  color: #d4a017;
 }
 
 /* ================= PRODUK CARD ================= */
@@ -898,6 +925,35 @@ footer a:hover {
     font-size: 24px;
     cursor: pointer;
 }
+
+ .chatbot {
+    position: fixed; bottom: 80px; right: 25px;
+    width: 320px; height: 420px;
+    background: #fff; border-radius: 15px; overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: none; flex-direction: column; z-index: 9999;
+  }
+  .chatbot-toggle {
+    position: fixed; bottom: 20px; right: 25px;
+    background: #071739; color: #fff;
+    border: none; border-radius: 50%;
+    width: 55px; height: 55px; font-size: 22px;
+    display: flex; justify-content: center; align-items: center;
+  }
+  #chatbot-header {
+    background: #071739; color: #fff;
+    padding: 10px 15px; display: flex; justify-content: space-between;
+  }
+  #chatbot-body {
+    flex-grow: 1; padding: 10px; overflow-y: auto;
+    font-size: 14px;
+  }
+  #chatbot-input { display: flex; border-top: 1px solid #ddd; }
+  #chatbot-input input { flex: 1; border: none; padding: 10px; }
+  #chatbot-input button { background: #071739; color: #fff; border: none; padding: 10px 15px; }
+  .chatbot-message { margin: 5px 0; }
+  .chatbot-message.user { text-align: right; }
+  .chatbot-message.bot { text-align: left; color: #071739; }
 
 #popupEmailForm input,
 #popupEmailForm textarea {

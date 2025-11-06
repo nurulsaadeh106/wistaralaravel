@@ -97,6 +97,10 @@ Route::get('/checkout/qris/{id}', function($id) {
     return view('checkout.qris', compact('order'));
 })->name('checkout.qris');
 
+Route::get('/checkout/{id_produk?}', [CheckoutController::class, 'index'])
+    ->middleware('auth')
+    ->name('checkout');
+
 /*
 |--------------------------------------------------------------------------
 | Route Login & Auth User
@@ -148,6 +152,27 @@ Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink
 
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
+
+// 🔍 Cek email dan nomor HP yang sudah terdaftar
+Route::get('/check-user', function (Illuminate\Http\Request $request) {
+    $exists = false;
+    $type = null;
+
+    if ($request->has('email')) {
+        $exists = \App\Models\User::where('email', $request->email)->exists();
+        $type = 'email';
+    }
+
+    if ($request->has('phone')) {
+        $exists = \App\Models\User::where('phone', $request->phone)->exists();
+        $type = 'phone';
+    }
+
+    return response()->json([
+        'exists' => $exists,
+        'type' => $type
+    ]);
+})->name('check.user');
 
 /*
 |--------------------------------------------------------------------------

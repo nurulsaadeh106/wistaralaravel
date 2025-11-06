@@ -9,11 +9,21 @@
     <h2 class="text-center fw-bold mb-4 font-caslon">Daftar Akun</h2>
 
     {{-- Alert Pesan --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if(session('error'))
-      <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
     @if(session('success'))
-      <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     <form method="POST" action="{{ route('user.register.post') }}">
@@ -185,6 +195,51 @@
       this.classList.add('is-valid');
     }
   });
+
+// === 📧 Cek Email Sudah Terdaftar ===
+const emailInput = document.getElementById('email');
+const emailError = document.getElementById('emailError');
+emailInput.addEventListener('blur', async () => {
+  const val = emailInput.value.trim();
+  if (!val) return;
+
+  const response = await fetch(`{{ route('check.user') }}?email=${encodeURIComponent(val)}`);
+  const data = await response.json();
+
+  if (data.exists) {
+    emailError.textContent = "⚠️ Email ini sudah terdaftar.";
+    emailInput.classList.add('is-invalid');
+    emailInput.classList.remove('is-valid');
+    alert("Email ini sudah digunakan. Silakan gunakan email lain.");
+  } else {
+    emailError.textContent = "";
+    emailInput.classList.remove('is-invalid');
+    emailInput.classList.add('is-valid');
+  }
+});
+
+// === 📞 Cek Nomor HP Sudah Terdaftar ===
+const phoneInput = document.getElementById('phone');
+const phoneError = document.getElementById('phoneError');
+phoneInput.addEventListener('blur', async () => {
+  const val = phoneInput.value.trim();
+  if (!val) return;
+
+  const response = await fetch(`{{ route('check.user') }}?phone=${encodeURIComponent(val)}`);
+  const data = await response.json();
+
+  if (data.exists) {
+    phoneError.textContent = "⚠️ Nomor telepon ini sudah terdaftar.";
+    phoneInput.classList.add('is-invalid');
+    phoneInput.classList.remove('is-valid');
+    alert("Nomor telepon ini sudah digunakan. Silakan gunakan nomor lain.");
+  } else {
+    phoneError.textContent = "";
+    phoneInput.classList.remove('is-invalid');
+    phoneInput.classList.add('is-valid');
+  }
+});
+
 </script>
 
 @include('inc.footer')

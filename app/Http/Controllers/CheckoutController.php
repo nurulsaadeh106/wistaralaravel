@@ -13,20 +13,30 @@ use App\Notifications\OrderStatusNotification;
 
 class CheckoutController extends Controller
 {
-    public function index()
+    public function index(Request $request, $id_produk = null)
     {
-        $cartItems = Cart::where('user_id', Auth::id())
-            ->with('produk')
-            ->get();
+        // Jika checkout langsung dari "Beli Sekarang"
+        if ($id_produk) {
+            $produk = \App\Models\Produk::findOrFail($id_produk);
+            $cartItems = collect([
+                (object)[
+                    'produk' => $produk,
+                    'qty' => 1
+                ]
+            ]);
+        } else {
+            // Kalau checkout dari keranjang
+            $cartItems = \App\Models\Cart::where('user_id', Auth::id())
+                ->with('produk')
+                ->get();
 
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('katalog')
-                ->with('error', 'Keranjang belanja Anda kosong.');
+            if ($cartItems->isEmpty()) {
+                return redirect()->route('katalog')->with('error', 'Keranjang belanja Anda kosong.');
+            }
         }
 
-        $total = $cartItems->sum(function($item) {
-            return $item->qty * $item->produk->harga;
-        });
+        // Hitung total
+        $total = $cartItems->sum(fn($item) => $item->qty * $item->produk->harga);
 
         return view('checkout.index', compact('cartItems', 'total'));
     }
@@ -121,4 +131,14 @@ class CheckoutController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    public function checkoutProduk($id_produk)
+    {
+        $produk = \App\Models\Produk::findOrFail($id_produk);
+
+        $total = $produk->harga;
+
+        return view('checkout.single', compact('produk', 'total'));
+    }
+
 }
