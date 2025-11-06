@@ -6,7 +6,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\API\ReviewController;
+use App\Http\Controllers\ChatbotController; // <-- tambahkan ini sekalian
 
+// 🔹 Login endpoint
 Route::post('/login', function (Request $request) {
     $request->validate([
         'email' => 'required|email',
@@ -29,13 +31,10 @@ Route::post('/login', function (Request $request) {
     ]);
 });
 
+// 🔹 Route API yang butuh autentikasi
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('reviews', ReviewController::class);
 });
 
-<?php
-
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ChatbotController;
-
+// 🔹 Chatbot endpoint
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
