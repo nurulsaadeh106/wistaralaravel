@@ -3,9 +3,10 @@
 <!-- ================= HERO SECTION ================= -->
 <section class="hero-section d-flex justify-content-center align-items-center text-center text-light">
     <!-- Background Video -->
-    <video autoplay muted loop playsinline class="background-video">
-        <source src="{{ asset('img/vidbatik.webm') }}" type="video/webm">
-        Your browser does not support HTML5 video.
+    <video autoplay muted loop playsinline class="background-video"
+        poster="{{ asset('img/bg-hero.svg') }}">
+    <source src="{{ asset('img/vidbatik.webm') }}" type="video/webm">
+    Your browser does not support HTML5 video.
     </video>
 
     <!-- Overlay -->
