@@ -5,7 +5,7 @@
     <!-- Background Video -->
     <video autoplay muted loop playsinline class="background-video"
         poster="{{ asset('img/bg-hero.svg') }}">
-    <source src="{{ asset('img/vidbatik.webm') }}" type="video/webm">
+    <source src="{{ asset('img/vidbatik.mp4') }}" type="video/mp4">
     Your browser does not support HTML5 video.
     </video>
 
@@ -347,5 +347,19 @@
         </div>
     </div>
 </section>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const video = document.querySelector(".background-video");
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        video.play();
+        observer.unobserve(video);
+      }
+    });
+  });
+  observer.observe(video);
+});
+</script>
 
 @include('inc.footer')
