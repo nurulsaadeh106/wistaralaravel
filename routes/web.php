@@ -81,6 +81,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/user/orders/{id}/upload-bukti', [UserOrderController::class, 'uploadBukti'])->name('user.order.uploadBukti');
     Route::post('/user/orders/{id}/cancel', [UserOrderController::class, 'cancel'])->name('user.order.cancel');
 });
+Route::get('/checkout/{id_produk?}', [CheckoutController::class, 'index'])
+    ->middleware('auth')
+    ->name('checkout.direct');
 
 Route::post('/checkout/{id}/upload-bukti', [UserOrderController::class, 'uploadBukti'])
     ->name('checkout.uploadBukti');
