@@ -247,7 +247,7 @@
 </div>
 
 <script>
-const API_URL = "{{ url('/api/chatbot') }}";
+const API_URL = "https://chatbot.batikwistara.com/api/chat";
 const chatBox = document.getElementById('chatBox');
 const toggleBtn = document.getElementById('chatToggle');
 const closeBtn = document.getElementById('closeChat');
