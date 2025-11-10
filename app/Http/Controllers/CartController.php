@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Cart;
 use App\Models\Produk;
 
 class CartController extends Controller
 {
     /**
-     * 🛒 Tampilkan halaman keranjang
+     * 🧺 Menampilkan daftar keranjang user
      */
     public function index()
     {
@@ -19,97 +18,70 @@ class CartController extends Controller
             ->with('produk')
             ->get();
 
-        // Hitung total harga
         $total = $cartItems->sum(function ($item) {
-            return $item->produk->harga * $item->qty;
+            return $item->qty * $item->produk->harga;
         });
 
         return view('cart.index', compact('cartItems', 'total'));
     }
 
     /**
-     * ➕ Tambah produk ke keranjang
+     * ➕ Tambahkan produk ke keranjang
      */
     public function add(Request $request, $produkId)
     {
-        $produk = Produk::find($produkId);
-        if (!$produk) {
-            return back()->with('error', 'Produk tidak ditemukan.');
-        }
+        // Pastikan produk valid
+        $produk = Produk::findOrFail($produkId);
 
-        $qty = max((int) $request->input('qty', 1), 1);
-
-        // Cek stok
-        if ($qty > $produk->stok) {
-            return back()->with('error', 'Jumlah melebihi stok produk.');
-        }
-
-        // Cek apakah sudah ada produk ini di keranjang
-        $existing = Cart::where('user_id', Auth::id())
-            ->where('produk_id', $produkId)
+        // Cek apakah produk sudah ada di keranjang user
+        $cart = Cart::where('user_id', Auth::id())
+            ->where('id_produk', $produkId) // pakai id_produk sesuai DB kamu
             ->first();
 
-        if ($existing) {
-            // Update qty
-            $newQty = $existing->qty + $qty;
-
-            if ($newQty > $produk->stok) {
-                return back()->with('error', 'Jumlah total melebihi stok.');
-            }
-
-            $existing->update([
-                'qty' => $newQty,
-                'updated_at' => now(),
-            ]);
+        if ($cart) {
+            // Jika sudah ada, tambahkan qty
+            $cart->increment('qty');
         } else {
-            // Tambah item baru
+            // Jika belum ada, buat baru
             Cart::create([
                 'user_id' => Auth::id(),
-                'produk_id' => $produkId,
-                'qty' => $qty,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'id_produk' => $produkId,
+                'qty' => 1,
             ]);
         }
 
-        return back()->with('success', 'Produk berhasil ditambahkan ke keranjang.');
+        return back()->with('success', 'Produk berhasil ditambahkan ke keranjang 🛒');
     }
 
     /**
-     * 🗑️ Hapus item dari keranjang
-     */
-    public function remove($id)
-    {
-        $cartItem = Cart::where('user_id', Auth::id())
-            ->where('id', $id)
-            ->firstOrFail();
-
-        $cartItem->delete();
-
-        return redirect()->back()->with('success', 'Produk berhasil dihapus dari keranjang.');
-    }
-
-    /**
-     * 🔄 Update jumlah qty dari keranjang (opsional)
+     * 🔄 Update jumlah produk di keranjang
      */
     public function update(Request $request, $id)
     {
-        $cartItem = Cart::where('user_id', Auth::id())
-            ->where('id', $id)
-            ->firstOrFail();
-
-        $qty = max((int) $request->input('qty', 1), 1);
-        $produk = Produk::find($cartItem->produk_id);
-
-        if ($qty > $produk->stok) {
-            return back()->with('error', 'Jumlah melebihi stok produk.');
-        }
-
-        $cartItem->update([
-            'qty' => $qty,
-            'updated_at' => now(),
+        $request->validate([
+            'qty' => 'required|integer|min:1',
         ]);
 
-        return back()->with('success', 'Keranjang berhasil diperbarui.');
+        $cart = Cart::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $cart->update(['qty' => $request->qty]);
+
+        return back()->with('success', 'Jumlah produk berhasil diperbarui ✅');
+    }
+
+    /**
+     * ❌ Hapus item dari keranjang
+     */
+    public function remove($id)
+    {
+        $cart = Cart::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $cart->delete();
+
+        return back()->with('success', 'Produk berhasil dihapus dari keranjang ❎');
     }
 }

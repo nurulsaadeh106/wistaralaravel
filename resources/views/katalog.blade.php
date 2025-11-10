@@ -120,7 +120,7 @@
               <!-- Tombol Aksi -->
               <div class="d-flex flex-column flex-md-row gap-2 mb-3">
                 <!-- Beli Sekarang -->
-                <a href="{{ route('checkout', $p->id_produk) }}"
+                <a href="{{ route('checkout.index', $p->id_produk) }}"
                   class="btn btn-dark flex-fill fw-semibold py-2">
                   🛍️ Beli Sekarang
                 </a>

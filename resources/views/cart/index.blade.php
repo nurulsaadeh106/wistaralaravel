@@ -1,4 +1,4 @@
-@include('inc.header')
+@include('inc.header') 
 
 <section class="cart-section position-relative" 
          style="background: url('{{ asset('img/bghero.svg') }}') center/cover no-repeat; min-height: 100vh; margin-top: -80px; padding-bottom: 60px;">
@@ -110,41 +110,21 @@
         </div>
       </div>
 
-      {{-- Total & Metode Pengambilan --}}
+      {{-- Total Harga & Tombol Checkout --}}
       @php
         $totalHarga = $cartItems->sum(fn($item) => $item->qty * (optional($item->produk)->harga ?? 0));
       @endphp
 
-      <form action="{{ route('checkout.index') }}" method="GET" class="mt-4">
-        <div class="card border-0 shadow-sm p-4 mb-4">
-          <h5 class="fw-bold mb-3">Pilih Metode Pengambilan</h5>
-
-          <div class="form-check">
-            <input class="form-check-input" type="radio" name="tipe_order" value="ambil" id="orderAmbil" checked>
-            <label class="form-check-label fw-semibold" for="orderAmbil">
-              🏬 Ambil di Toko
-            </label>
-          </div>
-
-          <div class="form-check mt-2">
-            <input class="form-check-input" type="radio" name="tipe_order" value="kirim" id="orderKirim" disabled>
-            <label class="form-check-label text-muted" for="orderKirim">
-              🚚 Kirim ke Alamat (Coming Soon)
-            </label>
-          </div>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-          <h5 class="fw-bold text-white mb-0">
-            Total:
-            <span class="text-gold">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
-          </h5>
-          <button type="submit" 
-                  class="btn btn-warning btn-lg rounded-pill px-4 fw-semibold text-dark shadow-sm">
-            <i class="fa-solid fa-cash-register me-2"></i> Checkout
-          </button>
-        </div>
-      </form>
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+        <h5 class="fw-bold text-white mb-0">
+          Total:
+          <span class="text-gold">Rp {{ number_format($totalHarga, 0, ',', '.') }}</span>
+        </h5>
+        <a href="{{ route('checkout.index') }}" 
+           class="btn btn-warning btn-lg rounded-pill px-4 fw-semibold text-dark shadow-sm">
+          <i class="fa-solid fa-cash-register me-2"></i> Checkout
+        </a>
+      </div>
 
     @else
       {{-- Jika keranjang kosong --}}
