@@ -50,11 +50,18 @@ class CheckoutController extends Controller
 public function process(Request $request)
 {
     $request->validate([
-        'nama' => 'required|string|max:255',
-        'telepon' => 'required|string|max:20',
-        'tanggal_ambil' => 'required|date',
-        'metode_pembayaran' => 'required|string',
+    'nama' => 'required|string|max:255',
+    'telepon' => 'required|string|max:20',
+    'tanggal_ambil' => 'required|date',
+    'metode_pembayaran' => 'required|string',
+    'tipe_order' => 'required|string|in:ambil,kirim',
+]);
+
+if ($request->tipe_order === 'kirim') {
+    $request->validate([
+        'alamat' => 'required|string|max:255',
     ]);
+}
 
     $userId = Auth::id();
 
@@ -72,7 +79,7 @@ public function process(Request $request)
             'metode_pembayaran' => $request->metode_pembayaran,
             'tanggal_ambil' => $request->tanggal_ambil,
             'tipe_order' => $request->tipe_order,
-            'alamat' => $request->alamat,
+            'alamat' => $request->tipe_order === 'ambil' ? 'Ambil di toko' : $request->alamat,
             'catatan' => $request->catatan,
         ]);
 
@@ -85,7 +92,7 @@ public function process(Request $request)
         ]);
 
         $produk->decrement('stok', 1);
-    } 
+    }
     else {
         // 🛒 Checkout dari keranjang
         $cartItems = Cart::where('user_id', $userId)->with('produk')->get();
