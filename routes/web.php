@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\BeritaAdminController;
 use App\Http\Controllers\Admin\KategoriAdminController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\SalesAnalyticsController;
 
 use Illuminate\Http\Request;
 
@@ -194,6 +195,9 @@ Route::get('/admin/dashboard', function () {
     }
     return view('admin.dashboard');
 })->name('admin.dashboard');
+
+Route::get('/admin/sales-data', [SalesAnalyticsController::class, 'monthlySales'])
+    ->name('admin.sales.data');
 
 /*
 |--------------------------------------------------------------------------

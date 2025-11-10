@@ -94,7 +94,7 @@ class CheckoutController extends Controller
             foreach ($cartItems as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'produk_id' => $item->produk_id,
+                    'id_produk' => $item->id_produk,
                     'qty' => $item->qty,
                     'harga' => $item->produk->harga,
                     'subtotal' => $item->qty * $item->produk->harga
