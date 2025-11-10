@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="https://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="https://www.w3.org/1999/xhtml">
+
+  <!-- 🌐 Halaman Utama -->
+  <url>
+    <loc>https://batikwistara.com/</loc>
+    <lastmod>2025-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- 📰 Halaman Berita -->
+  <url>
+    <loc>https://batikwistara.com/berita</loc>
+    <lastmod>2025-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 👕 Halaman Produk -->
+  <url>
+    <loc>https://batikwistara.com/produk</loc>
+    <lastmod>2025-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- 🧭 Halaman Tentang Kami -->
+  <url>
+    <loc>https://batikwistara.com/about</loc>
+    <lastmod>2025-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
