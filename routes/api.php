@@ -4,20 +4,29 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Produk;
 use App\Models\Berita;
 
+/*
+|--------------------------------------------------------------------------
+| API Routes for Chatbot Wistara
+|--------------------------------------------------------------------------
+| Menyediakan data produk & berita dalam format JSON
+| agar chatbot Node.js dapat mengaksesnya secara real-time.
+*/
+
+// ✅ Produk
 Route::get('/produk', function () {
     return response()->json(
-        Produk::select('id','nama_produk','harga','stok')
-              ->where('status','aktif')
-              ->orderBy('created_at','desc')
-              ->take(5)
-              ->get()
+        Produk::select('id_produk', 'nama_produk', 'slug', 'harga', 'stok', 'gambar')
+            ->where('status', 'aktif')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
     );
 });
 
-// ✅ Endpoint Berita untuk Chatbot
+// ✅ Berita
 Route::get('/berita', function () {
     return response()->json(
-        \App\Models\Berita::select('id', 'judul', 'slug', 'tanggal')
+        Berita::select('id', 'judul', 'slug', 'tanggal')
             ->orderBy('tanggal', 'desc')
             ->take(5)
             ->get()
