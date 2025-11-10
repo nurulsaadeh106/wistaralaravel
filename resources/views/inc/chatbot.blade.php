@@ -5,7 +5,7 @@
   --wistara-gold: #d4af37;
 }
 
-/* === Floating Chat Button === */
+/* Tombol Chat Mengambang */
 .chat-toggle {
   position: fixed;
   bottom: 25px;
@@ -14,19 +14,13 @@
   height: 65px;
   border-radius: 50%;
   border: none;
-  outline: none;
   background: linear-gradient(135deg, #071739, #1d315d);
   color: #fff;
   font-size: 1.6rem;
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   cursor: pointer;
   z-index: 1000;
-  transition: all .25s ease;
   animation: pulse 2s infinite;
-}
-.chat-toggle:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 @keyframes pulse {
   0% { box-shadow: 0 0 0 0 rgba(212,175,55,0.6); }
@@ -34,7 +28,7 @@
   100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
 }
 
-/* Chatbox */
+/* Kotak Chat */
 .chatbox {
   position: fixed;
   bottom: 95px;
@@ -147,9 +141,7 @@
 </style>
 
 <!-- Floating Chat Button -->
-<button class="chat-toggle" id="chatToggle">
-  💬
-</button>
+<button class="chat-toggle" id="chatToggle">💬</button>
 
 <!-- Chatbox -->
 <div class="chatbox" id="chatBox">
@@ -166,50 +158,116 @@
 
 <script>
 const API_URL = "https://chatbot.batikwistara.com/api/chat";
+const ADMIN_WA = "62895381110035"; // nomor admin kamu
 const chatBox = document.getElementById("chatBox");
 const chatBody = document.getElementById("chatBody");
 const chatInput = document.getElementById("chatInput");
+const toggleBtn = document.getElementById("chatToggle");
+const closeBtn = document.getElementById("closeChat");
+const sendBtn = document.getElementById("sendBtn");
 
-document.getElementById("chatToggle").onclick = () => {
-  chatBox.classList.toggle("active");
-  if (!localStorage.getItem("wistara_started")) {
-    sendToBot("menu");
-    localStorage.setItem("wistara_started", "1");
-  }
-};
-document.getElementById("closeChat").onclick = () => chatBox.classList.remove("active");
-document.getElementById("sendBtn").onclick = handleSend;
+// Saat halaman dibuka, bot langsung aktif
+window.addEventListener("load", () => {
+  chatBox.classList.add("active");
+  showWelcomeMessage();
+});
+
+toggleBtn.onclick = () => chatBox.classList.toggle("active");
+closeBtn.onclick = () => chatBox.classList.remove("active");
+sendBtn.onclick = handleSend;
 chatInput.addEventListener("keypress", e => e.key === "Enter" && handleSend());
 
+// Pesan awal
+function showWelcomeMessage() {
+  appendMessage("bot", "✨ Selamat datang di <b>Batik Wistara</b>!<br>Pilih layanan di bawah ini 👇", [
+    { label: "🛍️ Katalog Produk", value: "produk" },
+    { label: "📰 Berita Terbaru", value: "berita" },
+    { label: "📍 Alamat & Jam Buka", value: "alamat" },
+    { label: "💬 Hubungi Admin", value: "admin" }
+  ]);
+}
+
+// Kirim pesan user
 async function handleSend() {
   const text = chatInput.value.trim();
   if (!text) return;
   appendMessage("user", text);
   chatInput.value = "";
-  sendToBot(text);
+
+  // langsung ke WA jika ketik admin / 0
+  if (text === "0" || text.toLowerCase().includes("admin")) {
+    openAdminWhatsApp();
+    return;
+  }
+
+  await sendToBot(text);
 }
 
+// kirim pesan ke server chatbot
+async function sendToBot(message) {
+  appendTyping();
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+    const data = await res.json();
+    removeTyping();
+
+    // kalau pesan balasan berisi quick_replies = admin, langsung buka WA
+    if (Array.isArray(data.quick_replies)) {
+      const adminBtn = data.quick_replies.find(qr =>
+        typeof qr.value === "string" && qr.value.toLowerCase().includes("admin")
+      );
+      if (adminBtn) {
+        appendMessage("bot", data.reply || "📞 Klik tombol di bawah untuk chat admin:", data.quick_replies);
+        return;
+      }
+    }
+
+    appendMessage("bot", data.reply || "⚠️ Tidak ada balasan.", data.quick_replies || []);
+  } catch (err) {
+    removeTyping();
+    appendMessage("bot", "⚠️ Gagal menghubungi server chatbot.");
+  }
+}
+
+// Tambah bubble chat
 function appendMessage(sender, text, quickReplies = []) {
   const msg = document.createElement("div");
   msg.className = `message ${sender}`;
   const bubble = document.createElement("div");
   bubble.className = "bubble";
   bubble.innerHTML = text;
-  if (sender === "bot" && quickReplies?.length) {
+
+  // quick replies
+  if (sender === "bot" && quickReplies.length) {
     const wrap = document.createElement("div");
     wrap.className = "quick-replies";
-    quickReplies.forEach(r => {
+    quickReplies.forEach(qr => {
+      const label = typeof qr === "object" ? qr.label : qr;
+      const value = typeof qr === "object" ? qr.value : qr;
       const btn = document.createElement("button");
       btn.className = "quick-btn";
-      btn.textContent = r;
+      btn.textContent = label;
+
       btn.onclick = () => {
-        appendMessage("user", r);
-        sendToBot(r);
+        appendMessage("user", label);
+        // kalau tombol admin ditekan, langsung ke WA
+        if (value === "admin" || value.toLowerCase().includes("wa.me")) {
+          openAdminWhatsApp();
+        } else if (value.startsWith("http")) {
+          window.open(value, "_blank");
+        } else {
+          sendToBot(value);
+        }
       };
       wrap.appendChild(btn);
     });
     bubble.appendChild(wrap);
   }
+
   msg.appendChild(bubble);
   chatBody.appendChild(msg);
   chatBody.scrollTop = chatBody.scrollHeight;
@@ -228,23 +286,11 @@ function removeTyping() {
   if (t) t.remove();
 }
 
-async function sendToBot(message) {
-  appendTyping();
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
-    const data = await res.json();
-    removeTyping();
-
-    // 🔥 Format produk & berita (jika ada HTML dari API)
-    appendMessage("bot", data.reply, data.quick_replies || []);
-
-  } catch (err) {
-    removeTyping();
-    appendMessage("bot", "⚠️ Gagal menghubungi server chatbot.");
-  }
+// buka WA admin langsung
+function openAdminWhatsApp() {
+  const url = `https://wa.me/${ADMIN_WA}?text=Halo%20admin%2C%20saya%20ingin%20bertanya.`;
+  window.open(url, "_blank");
+  appendMessage("bot", "📞 Membuka WhatsApp Admin...");
 }
 </script>
+

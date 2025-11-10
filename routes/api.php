@@ -33,6 +33,18 @@ Route::get('/berita', function () {
     );
 });
 
+// ✅ savechat
+Route::post('/save-chat', function (Request $request) {
+    DB::table('chat_sessions')->insert([
+        'session_id'   => $request->input('session_id'),
+        'user_message' => $request->input('user_message'),
+        'bot_reply'    => $request->input('bot_reply'),
+        'created_at'   => now(),
+    ]);
+
+    return response()->json(['success' => true]);
+});
+
 // 🔹 Login endpoint
 Route::post('/login', function (Request $request) {
     $request->validate([
