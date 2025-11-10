@@ -4,14 +4,26 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Produk;
 use App\Models\Berita;
 
-Route::get('/produk', function() {
-    return response()->json(Produk::select('nama_produk','harga','stok')->get());
+// ✅ Endpoint untuk semua produk aktif
+Route::get('/produk', function () {
+    return response()->json(
+        Produk::select('id','nama_produk','harga','stok')
+              ->where('status', 'aktif')
+              ->orderBy('created_at', 'desc')
+              ->take(5) // tampilkan 5 produk saja
+              ->get()
+    );
 });
 
-Route::get('/berita', function() {
-    return response()->json(Berita::select('judul','tanggal','slug')->orderBy('tanggal','desc')->take(3)->get());
+// ✅ Endpoint Berita untuk Chatbot
+Route::get('/berita', function () {
+    return response()->json(
+        \App\Models\Berita::select('id', 'judul', 'slug', 'tanggal')
+            ->orderBy('tanggal', 'desc')
+            ->take(5)
+            ->get()
+    );
 });
-
 
 // 🔹 Login endpoint
 Route::post('/login', function (Request $request) {
