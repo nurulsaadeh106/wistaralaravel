@@ -142,10 +142,20 @@
 
       <!-- ✅ Tombol Submit -->
       <div class="text-end">
+        @if(request()->routeIs('checkout') || request()->routeIs('checkout.direct'))
+          @php
+            $firstItem = $cartItems->first();
+          @endphp
+          @if(isset($firstItem->id_produk))
+            <input type="hidden" name="id_produk" value="{{ $firstItem->id_produk }}">
+          @endif
+        @endif
+
         <button type="submit" class="btn btn-warning btn-lg rounded-pill px-4 fw-semibold text-dark shadow-sm">
           <i class="fa-solid fa-check me-2"></i> Buat Pesanan
         </button>
-      </div>
+</div>
+
     </form>
   </div>
 </section>
