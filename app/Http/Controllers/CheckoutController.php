@@ -14,14 +14,11 @@ class CheckoutController extends Controller
 {
     /**
      * 🧾 Menampilkan halaman checkout
-     * Bisa dari keranjang atau langsung beli satu produk
      */
     public function index($id_produk = null)
     {
-        // ✅ Jika ada id_produk → checkout langsung
         if ($id_produk) {
             $produk = Produk::findOrFail($id_produk);
-
             $cartItems = collect([
                 (object)[
                     'id_produk' => $produk->id_produk,
@@ -30,13 +27,11 @@ class CheckoutController extends Controller
                 ]
             ]);
         } else {
-            // ✅ Kalau tidak ada id_produk → ambil dari keranjang user
             $cartItems = Cart::where('user_id', Auth::id())
                 ->with('produk.kategori')
                 ->get();
         }
 
-        // Jika tidak ada produk sama sekali
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Keranjang kosong!');
         }
@@ -54,11 +49,17 @@ class CheckoutController extends Controller
             'telepon' => 'required|string|max:20',
             'tanggal_ambil' => 'required|date',
             'metode_pembayaran' => 'required|string',
+            'tipe_order' => 'required|string'
         ]);
 
         $userId = Auth::id();
 
-        // ⚡ Jika checkout langsung 1 produk
+        // 🧠 Alamat otomatis untuk "ambil" di toko
+        $alamatFinal = $request->tipe_order === 'ambil'
+            ? 'Ambil di toko Batik Wistara - Jl. Ketintang No.88, Surabaya'
+            : ($request->alamat ?? 'Alamat tidak tersedia');
+
+        // ⚡ Checkout langsung satu produk
         if ($request->filled('id_produk')) {
             $produk = Produk::findOrFail($request->id_produk);
 
@@ -72,7 +73,7 @@ class CheckoutController extends Controller
                 'metode_pembayaran' => $request->metode_pembayaran,
                 'tanggal_ambil' => $request->tanggal_ambil,
                 'tipe_order' => $request->tipe_order,
-                'alamat' => $request->alamat,
+                'alamat' => $alamatFinal,
                 'catatan' => $request->catatan,
             ]);
 
@@ -85,8 +86,7 @@ class CheckoutController extends Controller
             ]);
 
             $produk->decrement('stok', 1);
-        } 
-        else {
+        } else {
             // 🛒 Checkout dari keranjang
             $cartItems = Cart::where('user_id', $userId)->with('produk')->get();
 
@@ -106,7 +106,7 @@ class CheckoutController extends Controller
                 'metode_pembayaran' => $request->metode_pembayaran,
                 'tanggal_ambil' => $request->tanggal_ambil,
                 'tipe_order' => $request->tipe_order,
-                'alamat' => $request->alamat,
+                'alamat' => $alamatFinal,
                 'catatan' => $request->catatan,
             ]);
 
