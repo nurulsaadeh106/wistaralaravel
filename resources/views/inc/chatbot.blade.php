@@ -166,18 +166,24 @@ const toggleBtn = document.getElementById("chatToggle");
 const closeBtn = document.getElementById("closeChat");
 const sendBtn = document.getElementById("sendBtn");
 
-// Saat halaman dibuka, bot langsung aktif
-window.addEventListener("load", () => {
-  chatBox.classList.add("active");
-  showWelcomeMessage();
-});
+// === 🔹 Chat hanya muncul kalau tombol ditekan ===
+toggleBtn.onclick = () => {
+  chatBox.classList.toggle("active");
+  // kalau baru pertama kali dibuka, tampilkan pesan awal
+  if (chatBox.classList.contains("active") && !chatBox.dataset.started) {
+    chatBox.dataset.started = "true";
+    showWelcomeMessage();
+  }
+};
 
-toggleBtn.onclick = () => chatBox.classList.toggle("active");
+// tombol X menutup chat
 closeBtn.onclick = () => chatBox.classList.remove("active");
+
+// tombol enter/kirim
 sendBtn.onclick = handleSend;
 chatInput.addEventListener("keypress", e => e.key === "Enter" && handleSend());
 
-// Pesan awal
+// === Pesan awal ===
 function showWelcomeMessage() {
   appendMessage("bot", "✨ Selamat datang di <b>Batik Wistara</b>!<br>Pilih layanan di bawah ini 👇", [
     { label: "🛍️ Katalog Produk", value: "produk" },
@@ -187,14 +193,14 @@ function showWelcomeMessage() {
   ]);
 }
 
-// Kirim pesan user
+// === Kirim pesan user ===
 async function handleSend() {
   const text = chatInput.value.trim();
   if (!text) return;
   appendMessage("user", text);
   chatInput.value = "";
 
-  // langsung ke WA jika ketik admin / 0
+  // langsung ke WA jika mengetik admin / 0
   if (text === "0" || text.toLowerCase().includes("admin")) {
     openAdminWhatsApp();
     return;
@@ -203,7 +209,7 @@ async function handleSend() {
   await sendToBot(text);
 }
 
-// kirim pesan ke server chatbot
+// === Kirim ke API chatbot ===
 async function sendToBot(message) {
   appendTyping();
   try {
@@ -215,17 +221,6 @@ async function sendToBot(message) {
     const data = await res.json();
     removeTyping();
 
-    // kalau pesan balasan berisi quick_replies = admin, langsung buka WA
-    if (Array.isArray(data.quick_replies)) {
-      const adminBtn = data.quick_replies.find(qr =>
-        typeof qr.value === "string" && qr.value.toLowerCase().includes("admin")
-      );
-      if (adminBtn) {
-        appendMessage("bot", data.reply || "📞 Klik tombol di bawah untuk chat admin:", data.quick_replies);
-        return;
-      }
-    }
-
     appendMessage("bot", data.reply || "⚠️ Tidak ada balasan.", data.quick_replies || []);
   } catch (err) {
     removeTyping();
@@ -233,7 +228,7 @@ async function sendToBot(message) {
   }
 }
 
-// Tambah bubble chat
+// === Tampilkan pesan di chat ===
 function appendMessage(sender, text, quickReplies = []) {
   const msg = document.createElement("div");
   msg.className = `message ${sender}`;
@@ -241,7 +236,6 @@ function appendMessage(sender, text, quickReplies = []) {
   bubble.className = "bubble";
   bubble.innerHTML = text;
 
-  // quick replies
   if (sender === "bot" && quickReplies.length) {
     const wrap = document.createElement("div");
     wrap.className = "quick-replies";
@@ -251,10 +245,8 @@ function appendMessage(sender, text, quickReplies = []) {
       const btn = document.createElement("button");
       btn.className = "quick-btn";
       btn.textContent = label;
-
       btn.onclick = () => {
         appendMessage("user", label);
-        // kalau tombol admin ditekan, langsung ke WA
         if (value === "admin" || value.toLowerCase().includes("wa.me")) {
           openAdminWhatsApp();
         } else if (value.startsWith("http")) {
@@ -280,17 +272,17 @@ function appendTyping() {
   chatBody.appendChild(el);
   chatBody.scrollTop = chatBody.scrollHeight;
 }
-
 function removeTyping() {
   const t = chatBody.querySelector(".typing");
   if (t) t.remove();
 }
 
-// buka WA admin langsung
+// === Fungsi buka WhatsApp admin ===
 function openAdminWhatsApp() {
   const url = `https://wa.me/${ADMIN_WA}?text=Halo%20admin%2C%20saya%20ingin%20bertanya.`;
   window.open(url, "_blank");
   appendMessage("bot", "📞 Membuka WhatsApp Admin...");
 }
 </script>
+
 
