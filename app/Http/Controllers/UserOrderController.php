@@ -14,6 +14,7 @@ class UserOrderController extends Controller
      */
     public function show($id)
     {
+        // ID sekarang adalah string (contoh: WST-20251110-AX3P)
         $order = Order::where('id', $id)
             ->where('user_id', Auth::id())
             ->with(['items.produk'])
@@ -46,7 +47,7 @@ class UserOrderController extends Controller
 
         // 📸 Upload file
         $file = $request->file('bukti_pembayaran');
-        $filename = 'bukti_' . $order->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $filename = 'bukti_' . str_replace(['WST-', '-', ' '], '_', $order->id) . '_' . time() . '.' . $file->getClientOriginalExtension();
         $file->move($uploadPath, $filename);
 
         // 📝 Update order
@@ -79,7 +80,7 @@ class UserOrderController extends Controller
             // ❌ Update status pesanan
             $order->update([
                 'status' => 'batal',
-                'status_pembayaran' => 'gagal' // sekalian tandai gagal jika batal
+                'status_pembayaran' => 'gagal'
             ]);
 
             DB::commit();

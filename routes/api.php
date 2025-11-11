@@ -8,7 +8,7 @@ use App\Models\Berita;
 |--------------------------------------------------------------------------
 | API Routes for Chatbot Wistara
 |--------------------------------------------------------------------------
-| Menyediakan data produk & berita dalam format JSON
+| Menyediakan data produk pesanan berita dalam format JSON
 | agar chatbot Node.js dapat mengaksesnya secara real-time.
 */
 
@@ -33,17 +33,15 @@ Route::get('/berita', function () {
     );
 });
 
-// ✅ savechat
-Route::post('/save-chat', function (Request $request) {
-    DB::table('chat_sessions')->insert([
-        'session_id'   => $request->input('session_id'),
-        'user_message' => $request->input('user_message'),
-        'bot_reply'    => $request->input('bot_reply'),
-        'created_at'   => now(),
-    ]);
-
-    return response()->json(['success' => true]);
+// ✅ pesanan
+Route::get('/pesanan/{id}', function ($id) {
+    $order = DB::table('orders')->where('id', $id)->first();
+    if (!$order) {
+        return response()->json(['status' => 'not_found']);
+    }
+    return response()->json($order);
 });
+
 
 // 🔹 Login endpoint
 Route::post('/login', function (Request $request) {
